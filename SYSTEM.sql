@@ -275,4 +275,85 @@ INSERT INTO INVESTIGA (cod_policia, cod_caso) VALUES
 
 SELECT * FROM INVESTIGA;
 
+UPDATE POLICIA
+SET jefe = 'Baretta'
+WHERE nombre_p = 'Baretta';
+
+ALTER TABLE POLICIA
+DROP CONSTRAINT jefenomismo;
+
+ALTER TABLE POLICIA
+ADD CONSTRAINT jefenomismo CHECK (jefe!= 'Romerales');
+
+SELECT * FROM POLICIA;
+
+//3.2 Dos delincuentes no pueden tener el mismo apodo
+
+ALTER TABLE DELINCUENTE
+ADD CONSTRAINT mismoApodo CHECK (apodo!= apodo);
+
+//3.3 insertar nuevo delincuente y deshabilitar restricción anterior
+
+
+
+//3.4 modificar el esquema para guardar telefono movil polcias
+
+ALTER TABLE POLICIA
+ADD Tel_movil NUMBER(10); 
+
+UPDATE POLICIA
+SET Tel_movil = 665257325
+WHERE nombre_p = 'Baretta';
+
+//4.- Modifique la categoria de los policias, de tal forma que se incremente 
+en 1 la de aquellos cuya categoria esté por debajo de la media.
+
+UPDATE POLICIA
+SET categoria = categoria + 1
+WHERE categoria < ( SELECT AVG(categoria) FROM POLICIA);
+
+//5.- Elimine los delincuentes no implicados en ningun caso
+
+DELETE FROM DELINCUENTE
+WHERE NOT EXIST (SELECT *
+        FROM DELINCUENTE, INVOLUCRADO
+        WHERE (DNI = DNI_D));
+
+SELECT *
+FROM DELINCUENTE , INVOLUCRADO
+WHERE (DNI = DNI_D);
+
+//6.-Cree una vista con dos columnas 
+
+CREATE VIEW JUZGADO_CASO_ABIERTO
+AS (SELECT juzgado, COUNT(estado) AS numero_casos_abiertos 
+    FROM CASO
+    WHERE (estado = 'abierto')
+    GROUP BY juzgado);
+    
+SELECT * FROM JUZGADO_CASO_ABIERTO;
+
+//inserte un nuevo juzgado en la vista
+
+INSERT INTO JUZGADO_CASO_ABIERTO (juzgado, numero_casos_abiertos)
+VALUES (3, 2);  //nO PERMITE INSERCIONES "virtual column not allowed here"
+
+//7.1- Nombres de policias aue investigan casos que lleva el juzgado nº 4
+
+SELECT nombre_p
+FROM POLICIA, INVESTIGA, CASO
+WHERE codigo_p = cod_policia AND cod_caso = codigo_c AND juzgado = 4;
+
+//7.2- Clases de Armas que no tiene nadie asignadas
+
+SELECT nombre
+FROM CLASE JOIN ARMA
+ON nombre = clase;
+
+
+SELECT nombre
+FROM CLASE
+WHERE nombre NOT EXIST (SELECT nombre
+                FROM CLASE JOIN ARMA
+                ON nombre = clase);
 
